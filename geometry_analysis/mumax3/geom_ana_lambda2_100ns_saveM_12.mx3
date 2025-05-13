@@ -1,0 +1,52 @@
+wavelength := 69.59e-9
+
+n_discre := 32
+
+cs := wavelength/n_discre
+
+SetCellsize(cs, cs, cs)
+
+openBC
+EnableDemag
+
+// Material parameters for FeGe
+Aex   = 8.75e-12 // Exchange stiffness (J/m)
+Dbulk = 1.58e-3  // Dzyaloshinskii-Moriya interaction constant (J/m^2)
+Msat  = 384e3 // Saturation magnetization (A/m)
+alpha = 0.1  // Gilbert damping coefficient
+
+step_size := n_discre/2 
+
+for i:=1; i<=12; i+=1 {
+    for j:=0; j<i; j+=1 {
+
+        nx1 := 3*n_discre+i*step_size
+        ny1 := 3*n_discre+i*step_size
+        nz1 := 1
+
+        nx2 := 10*n_discre
+        ny2 := 3*n_discre+j*step_size
+
+        SetGridsize(nx1+nx2, ny1, nz1)
+
+        rect1 := rect(nx1*cs, ny1*cs).transl( -0.5*nx2*cs, 0, 0)
+        rect2 := rect(nx2*cs, ny2*cs).transl(  0.5*nx1*cs, 0, 0)
+
+        sample := rect1.add(rect2)
+
+        setgeom(sample)
+
+        m = uniform(0, 1, 0)
+        relax()
+        save(m)
+
+        run(100e-9)
+        save(m)
+    }
+}
+
+
+
+
+
+
